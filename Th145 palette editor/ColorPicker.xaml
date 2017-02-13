@@ -1,0 +1,27 @@
+﻿<UserControl x:Class="Th145_palette_editor.ColorPicker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:wpfTool="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
+             xmlns:local="clr-namespace:Th145_palette_editor"
+             mc:Ignorable="d" 
+             d:DesignHeight="20" d:DesignWidth="20"
+             Loaded="UserControl_Loaded">
+    <Grid MouseLeftButtonUp="Clicked">
+        <Rectangle Name="rect" Stroke="Black" StrokeThickness="1" />
+        <Popup Name="popup"
+               VerticalAlignment="Bottom"
+               IsOpen="False"
+               StaysOpen="False"
+               Focusable="False"
+               HorizontalOffset="1"
+               VerticalOffset="1"
+               PopupAnimation="Slide">
+            <wpfTool:ColorCanvas Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+                             BorderThickness="0"
+                             UsingAlphaChannel="True"
+                             SelectedColor="{Binding (local:ColorPicker.SelectedColor), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:ColorPicker}}}" />
+        </Popup>
+    </Grid>
+</UserControl>
