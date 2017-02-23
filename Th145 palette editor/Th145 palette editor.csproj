@@ -108,9 +108,9 @@
     </Compile>
     <Compile Include="MyColor.cs" />
     <Compile Include="Palette.cs" />
+    <Compile Include="StaticStuff.cs" />
     <Compile Include="TFPK.cs" />
     <Compile Include="TFXX.cs" />
-    <Compile Include="ToBitmapSource.cs" />
     <Page Include="ColorPicker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

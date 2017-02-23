@@ -3,8 +3,6 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -36,10 +34,10 @@ namespace Th145_palette_editor
             InitializeComponent();
         }
 
-        private void ColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<System.Windows.Media.Color?> e)
+        private void ColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {
             curChar.selectedBitmap.setPalette(curChar.selectedPalette);
-            view.Source = CToBitmapSource.ToBitmapSource(curChar.selectedBitmap.bmp);
+            view.Source = curChar.selectedBitmap.toBitmapSource();
         }
 
         private void Load_tfpk(object sender, RoutedEventArgs e)
@@ -101,7 +99,7 @@ namespace Th145_palette_editor
             charChanging = false;
             curChar.selectBitmap(BmpList.SelectedItem as string);
             curChar.selectPalette(PltList.SelectedItem as string);
-            view.Source = CToBitmapSource.ToBitmapSource(curChar.selectedBitmap.bmp);
+            view.Source = curChar.selectedBitmap.toBitmapSource();
             colors.ItemsSource = curChar.selectedPalette.list;
         }
 
@@ -110,7 +108,7 @@ namespace Th145_palette_editor
             if (charChanging || e.AddedItems.Count == 0)
                 return;
             curChar.selectBitmap(e.AddedItems[0] as string);
-            view.Source = CToBitmapSource.ToBitmapSource(curChar.selectedBitmap.bmp);
+            view.Source = curChar.selectedBitmap.toBitmapSource();
         }
 
         private void LoadPlt(object sender, SelectionChangedEventArgs e)
@@ -125,7 +123,7 @@ namespace Th145_palette_editor
                 PltList.SelectedIndex = curChar.pltNames.Count - 2;
                 PatchPaletteTarget.SelectedIndex = oldSavePltIndex;
             }
-            view.Source = CToBitmapSource.ToBitmapSource(curChar.selectedBitmap.bmp);
+            view.Source = curChar.selectedBitmap.toBitmapSource();
             colors.ItemsSource = curChar.selectedPalette.list;
         }
 
@@ -225,6 +223,18 @@ namespace Th145_palette_editor
                 new TFPK(this.tfpk.game_path, StaticPatchTarget).Repack();
 
             MessageBox.Show("Palette saved!");
+        }
+
+        private void view_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            Image src = sender as Image;
+            Point pt = e.GetPosition(src);
+            Bitmap bmp = this.curChar.selectedBitmap;
+            int x = (int)(pt.X * bmp.width  / src.ActualWidth);
+            int y = (int)(pt.Y * bmp.height / src.ActualHeight);
+            byte color = bmp.getPixel(x, y);
+
+            StaticStuff.GetChildOfType<System.Windows.Controls.Primitives.Popup>(this.colors.ItemContainerGenerator.ContainerFromIndex(color)).IsOpen = true;
         }
     }
 }

@@ -57,7 +57,7 @@ namespace Th145_palette_editor
             {
                 string name = f.Substring(f.LastIndexOf('\\') + 1);
                 Bitmap bmp = new Bitmap(f, false);
-                if (bmp.bmp != null)
+                if (bmp)
                 {
                     bmpNames.Add(name);
                     bitmaps[name] = bmp;

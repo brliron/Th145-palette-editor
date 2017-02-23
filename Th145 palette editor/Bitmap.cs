@@ -5,13 +5,23 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Th145_palette_editor
 {
     class Bitmap
     {
-        public System.Drawing.Bitmap bmp;
+        byte[] bytes;
+        System.Drawing.Bitmap bmp;
         GCHandle pinnedArray;
+
+        public int width  { get { return this.bmp.Width;  } }
+        public int height { get { return this.bmp.Height; } }
+
+        public byte getPixel(int x, int y)
+        {
+            return bytes[y * width + x];
+        }
 
         public Bitmap(string fn, bool verbose = true)
         {
@@ -29,15 +39,15 @@ namespace Th145_palette_editor
 
             if (bits != 8)
             {
-                if (verbose) System.Windows.MessageBox.Show("Could not load image: only 8-bits images are supported.");
+                if (verbose) MessageBox.Show("Could not load image: only 8-bits images are supported.");
                 return;
             }
             tfbm.decomp_init(comp_size);
 
-            byte[] bytes = new byte[width * height];
+            this.bytes = new byte[width * height];
             if (tfbm.decomp_read(bytes, (int)(width * height)) != (int)(width * height))
             {
-                if (verbose) System.Windows.MessageBox.Show("Could not load image: decompression error.");
+                if (verbose) MessageBox.Show("Could not load image: decompression error.");
                 return;
             }
 
@@ -58,6 +68,16 @@ namespace Th145_palette_editor
             for (int i = 0; i < pal.Entries.Length; i++)
                 pal.Entries[i] = palette.list[i];
             bmp.Palette = pal;
+        }
+
+        public System.Windows.Media.Imaging.BitmapSource toBitmapSource()
+        {
+            return StaticStuff.ToBitmapSource(this.bmp);
+        }
+
+        public static implicit operator bool(Bitmap bmp)
+        {
+            return bmp.bmp != null;
         }
     }
 }

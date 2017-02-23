@@ -47,7 +47,7 @@
                     </StackPanel>
                     <ComboBox Grid.Row="1" Grid.Column="1" Name="PltList" Visibility="Hidden" SelectionChanged="LoadPlt" ItemsSource="{Binding curChar.pltNames}" />
                 </Grid>
-                <Image Name="view" Grid.Row="1" />
+                <Image Name="view" Grid.Row="1" RenderOptions.BitmapScalingMode="NearestNeighbor" MouseLeftButtonUp="view_MouseLeftButtonUp" />
             </Grid>
             <ItemsControl Name="colors" Grid.Column="1">
                 <ItemsControl.ItemsPanel>
