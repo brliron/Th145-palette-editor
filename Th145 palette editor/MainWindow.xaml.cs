@@ -28,14 +28,17 @@ namespace Th145_palette_editor
         TFPK tfpk;
         List<Character> characters;
         Character curChar;
+        UndoStack<Tuple<ColorPicker, Color>> stack;
 
         public MainWindow()
         {
             InitializeComponent();
+            stack = new UndoStack<Tuple<ColorPicker, Color>>();
         }
 
         private void ColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {
+            stack.Add(Tuple.Create(sender as ColorPicker, (Color)e.NewValue));
             curChar.selectedBitmap.setPalette(curChar.selectedPalette);
             view.Source = curChar.selectedBitmap.toBitmapSource();
         }
@@ -235,6 +238,32 @@ namespace Th145_palette_editor
             byte color = bmp.getPixel(x, y);
 
             StaticStuff.GetChildOfType<System.Windows.Controls.Primitives.Popup>(this.colors.ItemContainerGenerator.ContainerFromIndex(color)).IsOpen = true;
+        }
+
+        private void Undo_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = stack != null && stack.CanUndo;
+        }
+
+        private void Undo_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Tuple<ColorPicker, Color> t = stack.Undo();
+            stack.ignoreAdd = true;
+            t.Item1.SelectedColor = t.Item2;
+            stack.ignoreAdd = false;
+        }
+
+        private void Redo_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = stack != null && stack.CanRedo;
+        }
+
+        private void Redo_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Tuple<ColorPicker, Color> t = stack.Redo();
+            stack.ignoreAdd = true;
+            t.Item1.SelectedColor = t.Item2;
+            stack.ignoreAdd = false;
         }
     }
 }

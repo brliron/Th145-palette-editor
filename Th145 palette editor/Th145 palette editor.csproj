@@ -111,6 +111,7 @@
     <Compile Include="StaticStuff.cs" />
     <Compile Include="TFPK.cs" />
     <Compile Include="TFXX.cs" />
+    <Compile Include="UndoStack.cs" />
     <Page Include="ColorPicker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
