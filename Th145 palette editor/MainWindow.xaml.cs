@@ -23,6 +23,7 @@ namespace Th145_palette_editor
     /// <summary>
     /// Logique d'interaction pour MainWindow.xaml
     /// </summary>
+
     public partial class MainWindow : Window
     {
         TFPK tfpk;
@@ -30,10 +31,25 @@ namespace Th145_palette_editor
         Character curChar;
         UndoStack<Tuple<ColorPicker, Color>> stack;
 
+        public static readonly DependencyProperty isGameSelectedProperty = DependencyProperty.Register("isGameSelected", typeof(bool), typeof(MainWindow));
+        public bool isGameSelected
+        {
+            get { return (bool)this.GetValue(isGameSelectedProperty); }
+            set { this.SetValue(isGameSelectedProperty, value); }
+        }
+        public static readonly DependencyProperty isPaletteSelectedProperty = DependencyProperty.Register("isPaletteSelected", typeof(bool), typeof(MainWindow));
+        bool isPaletteSelected
+        {
+            get { return (bool)this.GetValue(isPaletteSelectedProperty); }
+            set { this.SetValue(isPaletteSelectedProperty, value); }
+        }
+
         public MainWindow()
         {
             InitializeComponent();
             stack = new UndoStack<Tuple<ColorPicker, Color>>();
+            isGameSelected = false;
+            isPaletteSelected = false;
         }
 
         private void ColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
@@ -78,7 +94,7 @@ namespace Th145_palette_editor
                     characters.Add(new Character(dir.Substring(dir.LastIndexOf('\\') + 1), dir));
 
             CharsList.ItemsSource = characters;
-            CharsList.Visibility = Visibility.Visible;
+            isGameSelected = true;
         }
 
         bool charChanging = false;
@@ -95,9 +111,7 @@ namespace Th145_palette_editor
 
             BmpList.SelectedIndex = curChar.bmpNames.FindIndex(x => x == curChar.getDefaultBmp());
             PltList.SelectedIndex = 0;
-            BmpListContainer.Visibility = Visibility.Visible;
-            PltList.Visibility = Visibility.Visible;
-            SavePanel.Visibility = Visibility.Visible;
+            isPaletteSelected = true;
 
             charChanging = false;
             curChar.selectBitmap(BmpList.SelectedItem as string);
