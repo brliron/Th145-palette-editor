@@ -28,61 +28,25 @@
     <Window.CommandBindings>
         <CommandBinding Command="ApplicationCommands.Undo" CanExecute="Undo_CanExecute" Executed="Undo_Executed" />
         <CommandBinding Command="ApplicationCommands.Redo" CanExecute="Redo_CanExecute" Executed="Redo_Executed" />
+        <CommandBinding Command="local:CustomCommands.OpenTh145" CanExecute="Generic_CanExecute" Executed="OpenTh145_Executed" />
+        <CommandBinding Command="local:CustomCommands.OpenTh155" CanExecute="Generic_CanExecute" Executed="OpenTh155_Executed" />
     </Window.CommandBindings>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="auto"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="auto"/>
-            <ColumnDefinition Width="auto"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <Button Grid.Row="0" Grid.Column="0" Click="Load_tfpk" Margin="0,0,10,0">Select game folder</Button>
-        <ComboBox Grid.Row="0" Grid.Column="1" Name="CharsList" Style="{StaticResource GameSelected}" SelectionChanged="LoadCharacter">
-            <ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding name}" />
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
-        <DockPanel Grid.Row="1" Grid.Column="0" Name="BmpListContainer" Style="{StaticResource PaletteSelected}" Margin="0,0,10,0">
-            <Button DockPanel.Dock="Left" Click="Prev_bmp">◀</Button>
-            <Button DockPanel.Dock="Right" Click="Next_bmp">▶</Button>
-            <ComboBox Name="BmpList" HorizontalContentAlignment="Center" SelectionChanged="LoadBmp" />
-        </DockPanel>
-        <ComboBox Grid.Row="1" Grid.Column="1" Name="PltList" Style="{StaticResource PaletteSelected}" SelectionChanged="LoadPlt" ItemsSource="{Binding curChar.pltNames}" />
-        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Style="{StaticResource PaletteSelected}">
-            <Button Command="ApplicationCommands.Undo" Margin="0,0,10,0">Undo</Button>
-            <Button Command="ApplicationCommands.Redo">Redo</Button>
-        </StackPanel>
-        <Image Name="view" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource PaletteSelected}" RenderOptions.BitmapScalingMode="NearestNeighbor" MouseLeftButtonUp="view_MouseLeftButtonUp" />
-        <Grid Grid.Row="0" Grid.Column="2" Grid.RowSpan="4">
-            <ItemsControl Name="colors" Style="{StaticResource PaletteSelected}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <UniformGrid HorizontalAlignment="Left" VerticalAlignment="Top" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <local:ColorPicker Width="20" Height="20"
-                                           SelectedColorChanged="ColorPicker_SelectedColorChanged"
-                                           SelectedColor="{Binding wval}"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </Grid>
-        <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" Name="SavePanel" Style="{StaticResource PaletteSelected}">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Command="local:CustomCommands.OpenTh145" />
+                <MenuItem Command="local:CustomCommands.OpenTh155" />
+            </MenuItem>
+            <MenuItem Command="ApplicationCommands.Undo" />
+            <MenuItem Command="ApplicationCommands.Redo" />
+        </Menu>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Name="SavePanel" Style="{StaticResource PaletteSelected}">
             <TextBlock Margin="0,0,3,0">Save palette as:</TextBlock>
             <ComboBox Name="SaveTarget" SelectedIndex="0" SelectionChanged="ChangeSaveTarget" Margin="0,0,10,0">
                 <ComboBoxItem>Palette file</ComboBoxItem>
-                <ComboBoxItem>Static patch</ComboBoxItem>
-                <ComboBoxItem>Thcrap patch</ComboBoxItem>
+                <ComboBoxItem>Th145 static patch</ComboBoxItem>
+                <ComboBoxItem>Th145 thcrap patch</ComboBoxItem>
+                <ComboBoxItem>Th155 thcrap patch</ComboBoxItem>
             </ComboBox>
             <ComboBox Name="StaticPatchTarget" SelectedIndex="1" Visibility="Collapsed" Margin="0,0,10,0">
                 <ComboBoxItem>th145e.pak</ComboBoxItem>
@@ -114,5 +78,39 @@
             </ComboBox>
             <Button Click="Save">Save</Button>
         </StackPanel>
-    </Grid>
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                <ComboBox Name="CharsList" Style="{StaticResource GameSelected}" SelectionChanged="LoadCharacter" Margin="0,0,10,0">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <DockPanel Name="BmpListContainer" Style="{StaticResource PaletteSelected}" Margin="0,0,10,0">
+                    <Button DockPanel.Dock="Left" Click="Prev_bmp">◀</Button>
+                    <Button DockPanel.Dock="Right" Click="Next_bmp">▶</Button>
+                    <ComboBox Name="BmpList" HorizontalContentAlignment="Center" SelectionChanged="LoadBmp" />
+                </DockPanel>
+                <ComboBox Name="PltList" Style="{StaticResource PaletteSelected}" SelectionChanged="LoadPlt" ItemsSource="{Binding curChar.pltNames}" />
+            </StackPanel>
+            <Grid DockPanel.Dock="Right">
+                <ItemsControl Name="colors" Style="{StaticResource PaletteSelected}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid HorizontalAlignment="Left" VerticalAlignment="Top" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <local:ColorPicker Width="20" Height="20"
+                                           SelectedColorChanged="ColorPicker_SelectedColorChanged"
+                                           SelectedColor="{Binding wval}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+            <Image Name="view" Style="{StaticResource PaletteSelected}" RenderOptions.BitmapScalingMode="NearestNeighbor" MouseLeftButtonUp="view_MouseLeftButtonUp" />
+        </DockPanel>
+    </DockPanel>
 </Window>

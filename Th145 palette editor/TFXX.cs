@@ -8,6 +8,60 @@ using System.Threading.Tasks;
 
 namespace Th145_palette_editor
 {
+    class Adler32
+    {
+        // Adler-32 algorightm, copy-paster from the ZLIB RFC (RFC 1950) and ported to C#.
+        const UInt32 BASE = 65521; /* largest prime smaller than 65536 */
+
+        private UInt32 adler;
+
+        public Adler32()
+        {
+            this.adler = 1;
+        }
+
+        public static explicit operator UInt32(Adler32 self)
+        {
+            return self.adler;
+        }
+
+        /*
+           Update a running Adler-32 checksum with the bytes buf[0..len-1]
+         and return the updated checksum. The Adler-32 checksum should be
+         initialized to 1.
+
+         Usage example:
+
+           unsigned long adler = 1L;
+
+           while (read_buffer(buffer, length) != EOF) {
+             adler = update_adler32(adler, buffer, length);
+           }
+           if (adler != original_adler) error();
+        */
+        private static UInt32 update_adler32(UInt32 adler,
+            byte[] buf, int len)
+        {
+            UInt32 s1 = adler & 0xffff;
+            UInt32 s2 = (adler >> 16) & 0xffff;
+            int n;
+
+            for (n = 0; n < len; n++)
+            {
+                s1 = (s1 + buf[n]) % BASE;
+                s2 = (s2 + s1) % BASE;
+            }
+            return (s2 << 16) + s1;
+        }
+
+        /* Return the adler32 of the bytes buf[0..len-1] */
+        public void update(byte[] buf, int len)
+        {
+            this.adler = update_adler32(this.adler, buf, len);
+        }
+
+    }
+
     class TFXX
     {
         bool verbose;
@@ -83,6 +137,7 @@ namespace Th145_palette_editor
 
 
         MemoryStream comp_ms;
+        Adler32 adler32;
         byte[] result;
         public bool open_write(string fn, string magic, string item_name)
         {
@@ -97,6 +152,7 @@ namespace Th145_palette_editor
             // Init compression state
             comp_ms = new MemoryStream();
             z = new DeflateStream(comp_ms, CompressionLevel.Optimal, true);
+            adler32 = new Adler32();
             return true;
         }
 
@@ -110,9 +166,17 @@ namespace Th145_palette_editor
             fs.Write(BitConverter.GetBytes(n), 0, 4);
         }
 
+        public void write_dword_BE(UInt32 n)
+        {
+            byte[] array = BitConverter.GetBytes(n);
+            Array.Reverse(array);
+            fs.Write(array, 0, 4);
+        }
+
         public void comp_write(byte[] array, int count)
         {
             z.Write(array, 0, count);
+            adler32.update(array, count);
         }
 
         // After calling this function, you should stop calling comp_write
@@ -123,16 +187,18 @@ namespace Th145_palette_editor
             result = comp_ms.ToArray();
             comp_ms.Dispose();
             comp_ms = null;
-            write_dword((UInt32)result.Length);
+            write_dword((UInt32)(result.Length + 6)); // Add space for the ZLIB header and footer
         }
 
         public void comp_finalize()
         {
-            fs.WriteByte(0x78);
-            fs.WriteByte(0xDA);
+            write_byte(0x78);
+            write_byte(0xDA);
             fs.Write(result, 0, result.Length);
+            write_dword_BE((UInt32)adler32);
             fs.Dispose();
             fs = null;
+            adler32 = null;
         }
     }
 }

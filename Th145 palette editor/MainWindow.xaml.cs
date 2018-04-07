@@ -31,19 +31,6 @@ namespace Th145_palette_editor
         Character curChar;
         UndoStack<Tuple<ColorPicker, Color>> stack;
 
-        public static readonly DependencyProperty isGameSelectedProperty = DependencyProperty.Register("isGameSelected", typeof(bool), typeof(MainWindow));
-        public bool isGameSelected
-        {
-            get { return (bool)this.GetValue(isGameSelectedProperty); }
-            set { this.SetValue(isGameSelectedProperty, value); }
-        }
-        public static readonly DependencyProperty isPaletteSelectedProperty = DependencyProperty.Register("isPaletteSelected", typeof(bool), typeof(MainWindow));
-        bool isPaletteSelected
-        {
-            get { return (bool)this.GetValue(isPaletteSelectedProperty); }
-            set { this.SetValue(isPaletteSelectedProperty, value); }
-        }
-
         public MainWindow()
         {
             InitializeComponent();
@@ -59,22 +46,22 @@ namespace Th145_palette_editor
             view.Source = curChar.selectedBitmap.toBitmapSource();
         }
 
-        private void Load_tfpk(object sender, RoutedEventArgs e)
+        private void Load_tfpk(string game_id)
         {
             CommonOpenFileDialog dialog = new CommonOpenFileDialog();
             dialog.IsFolderPicker = true;
             if (dialog.ShowDialog(this) != CommonFileDialogResult.Ok)
                 return;
 
-            TFPK tfpk = new TFPK(dialog.FileName, "th145.pak");
+            TFPK tfpk = new TFPK(dialog.FileName, game_id + ".pak");
             if (tfpk.Exists == false)
             {
-                MessageBox.Show("File " + tfpk.pak_path + "not found");
+                MessageBox.Show(this, "File " + tfpk.pak_path + " not found");
                 return;
             }
             if (tfpk.IsExtracted && tfpk.ContainsDirectory(@"data\actor") == false)
             {
-                MessageBox.Show("The directory " + tfpk.extracted_path + " exists and doesn't contains a dump of " + tfpk.pak_path + ".\n" +
+                MessageBox.Show(this, "The directory " + tfpk.extracted_path + " exists and doesn't contains a dump of " + tfpk.pak_path + ".\n" +
                     "Remove, rename or move this directory and try again.");
                 return;
             }
@@ -83,7 +70,7 @@ namespace Th145_palette_editor
                 tfpk.Extract();
             if (tfpk.ContainsDirectory(@"data\actor") == false)
             {
-                MessageBox.Show("The directory " + tfpk.extracted_path + @"\data\actor haven't been created by th145arc.");
+                MessageBox.Show(this, "The directory " + tfpk.extracted_path + @"\data\actor haven't been created by th145arc.");
                 return;
             }
 
@@ -95,6 +82,8 @@ namespace Th145_palette_editor
 
             CharsList.ItemsSource = characters;
             isGameSelected = true;
+            if (characters.Count > 0)
+                CharsList.SelectedIndex = 0;
         }
 
         bool charChanging = false;
@@ -155,12 +144,13 @@ namespace Th145_palette_editor
                     PatchCharacterTarget.Visibility = Visibility.Collapsed;
                     PatchPaletteTarget.Visibility = Visibility.Collapsed;
                     break;
-                case "Static patch":
+                case "Th145 static patch":
                     StaticPatchTarget.Visibility = Visibility.Visible;
                     PatchCharacterTarget.Visibility = Visibility.Visible;
                     PatchPaletteTarget.Visibility = Visibility.Visible;
                     break;
-                case "Thcrap patch":
+                case "Th145 thcrap patch":
+                case "Th155 thcrap patch":
                     StaticPatchTarget.Visibility = Visibility.Collapsed;
                     PatchCharacterTarget.Visibility = Visibility.Visible;
                     PatchPaletteTarget.Visibility = Visibility.Visible;
@@ -203,14 +193,14 @@ namespace Th145_palette_editor
                         return;
                     filename = dlg.FileName;
                     break;
-                case "Static patch":
+                case "Th145 static patch":
                     if (File.Exists(this.tfpk.game_path + "\\th145e.exe") == false)
                     {
-                        if (MessageBox.Show("Do you want to install the static patch files?", "Static patch installation", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                        if (MessageBox.Show(this, "Do you want to install the static patch files?", "Static patch installation", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                         {
                             File.Copy(".\\th145e.exe", this.tfpk.game_path + "\\th145e.exe");
                             File.Copy(".\\th145e.dll", this.tfpk.game_path + "\\th145e.dll", true);
-                            MessageBox.Show("Static patch files installed. To use your custom palettes, run th145e.exe instead of th145.exe.");
+                            MessageBox.Show(this, "Static patch files installed. To use your custom palettes, run th145e.exe instead of th145.exe.");
                         }
                         else
                             return;
@@ -223,12 +213,14 @@ namespace Th145_palette_editor
                     Directory.CreateDirectory(out_dir);
                     filename = out_dir + PatchPaletteTarget;
                     break;
-                case "Thcrap patch":
+                case "Th145 thcrap patch":
+                case "Th155 thcrap patch":
+                    string game_id = (SaveTarget == "Th145 thcrap patch") ? "th145" : "th155";
                     CommonOpenFileDialog dialog = new CommonOpenFileDialog();
                     dialog.IsFolderPicker = true;
                     if (dialog.ShowDialog(this) != CommonFileDialogResult.Ok)
                         return;
-                    out_dir = dialog.FileName + @"\th145\data\actor\" + PatchCharacterTarget + '\\';
+                    out_dir = dialog.FileName + @"\" + game_id + @"\data\actor\" + PatchCharacterTarget + @"\";
                     Directory.CreateDirectory(out_dir);
                     filename = out_dir + PatchPaletteTarget;
                     break;
@@ -239,7 +231,7 @@ namespace Th145_palette_editor
             if (SaveTarget == "Static patch")
                 new TFPK(this.tfpk.game_path, StaticPatchTarget).Repack();
 
-            MessageBox.Show("Palette saved!");
+            MessageBox.Show(this, "Palette saved!");
         }
 
         private void view_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -252,32 +244,6 @@ namespace Th145_palette_editor
             byte color = bmp.getPixel(x, y);
 
             StaticStuff.GetChildOfType<System.Windows.Controls.Primitives.Popup>(this.colors.ItemContainerGenerator.ContainerFromIndex(color)).IsOpen = true;
-        }
-
-        private void Undo_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = stack != null && stack.CanUndo;
-        }
-
-        private void Undo_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            Tuple<ColorPicker, Color> t = stack.Undo();
-            stack.ignoreAdd = true;
-            t.Item1.SelectedColor = t.Item2;
-            stack.ignoreAdd = false;
-        }
-
-        private void Redo_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = stack != null && stack.CanRedo;
-        }
-
-        private void Redo_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            Tuple<ColorPicker, Color> t = stack.Redo();
-            stack.ignoreAdd = true;
-            t.Item1.SelectedColor = t.Item2;
-            stack.ignoreAdd = false;
         }
     }
 }

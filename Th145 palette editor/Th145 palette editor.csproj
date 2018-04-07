@@ -106,6 +106,7 @@
     <Compile Include="ColorPicker.xaml.cs">
       <DependentUpon>ColorPicker.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MainWindow_Commands.cs" />
     <Compile Include="MyColor.cs" />
     <Compile Include="Palette.cs" />
     <Compile Include="StaticStuff.cs" />
