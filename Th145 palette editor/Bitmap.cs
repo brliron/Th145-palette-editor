@@ -15,12 +15,13 @@ namespace Th145_palette_editor
         System.Drawing.Bitmap bmp;
         GCHandle pinnedArray;
 
-        public int width  { get { return this.bmp.Width;  } }
-        public int height { get { return this.bmp.Height; } }
+        public int width         { get { return this.bmp.Width;  } }
+        public int height        { get { return this.bmp.Height; } }
+        public int padding_width { get; }
 
         public byte getPixel(int x, int y)
         {
-            return bytes[y * width + x];
+            return bytes[y * padding_width + x];
         }
 
         public Bitmap(string fn, bool verbose = true)
@@ -54,6 +55,7 @@ namespace Th145_palette_editor
             pinnedArray = GCHandle.Alloc(bytes, GCHandleType.Pinned);
             IntPtr pointer = pinnedArray.AddrOfPinnedObject();
             this.bmp = new System.Drawing.Bitmap((int)width, (int)height, (int)padding_width, PixelFormat.Format8bppIndexed, pointer);
+            this.padding_width = (int)padding_width;
         }
 
         ~Bitmap()
